@@ -11,9 +11,6 @@
 
 #include "kernel_call.h"
 
-#define cpuid(info, x)    __cpuidex(info, x, 0)
-#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
-
 typedef enum _MEMORY_INFORMATION_CLASS
 {
     MemoryBasicInformation,
@@ -55,35 +52,34 @@ EXTERN_C NTSTATUS RequiemNtReadVirtualMemory(
 
 __forceinline void __intr(BOOL& _SSE, BOOL& _AVX, BOOL& _AVX512) {
     int info[4];
-    cpuid(info, 0);
+    __cpuidex(info, 0, 0);
     int nIds = info[0];
 
-    cpuid(info, 0x80000000);
+    __cpuidex(info, 0x80000000, 0);
 
     _SSE = _AVX = _AVX512 = 0;
 
     if (nIds >= 0x00000001) {
-        cpuid(info, 0x00000001);
+        __cpuidex(info, 0x00000001, 0);
         _SSE = (info[3] & ((int)1 << 25)) != 0;
         _AVX = (info[2] & ((int)1 << 28)) != 0;
     }
 
     if (nIds >= 0x00000007) {
-        cpuid(info, 0x00000007);
+        __cpuidex(info, 0x00000007, 0);
         _AVX512 = (info[1] & ((int)1 << 16)) != 0;
     }
 }
 
 __forceinline void RPM(const std::string& __str, BOOL SSE, BOOL AVX, BOOL AVX512, const std::vector<DWORD>& pids = std::vector<DWORD>()) {
-    /*
 
+    /*
     push ebp
         mov ebp, esp
         sub esp, __LOCAL_SIZE
         push ebx
         push esi
         push edi
-
     */
 
     DWORD p[1024]; DWORD n, j; 
@@ -124,7 +120,7 @@ __forceinline void RPM(const std::string& __str, BOOL SSE, BOOL AVX, BOOL AVX512
 
     for (DWORD i = 0; i < j; i++) {
         DWORD __p = p[i];
-        if (__p == 0 || __p == 4 || __p == 140 || __p == 104 || __p == _p) {
+        if (__p == 0 || __p == 4 || __p == _p) {
             continue;
         }
 
@@ -141,7 +137,7 @@ __forceinline void RPM(const std::string& __str, BOOL SSE, BOOL AVX, BOOL AVX512
         clientId.UniqueProcess = reinterpret_cast<HANDLE>(static_cast<ULONG_PTR>(__p));
 
         status = RequiemNtOpenProcess(&processHandle, (0x0400) | (0x0010), &objAttr, &clientId);
-        if (NT_SUCCESS(status)) {
+        if ((((NTSTATUS)(status)) >= 0)) {
             h = processHandle;
             printf("Scanning Process: %d\n", __p);
 
@@ -157,20 +153,29 @@ __forceinline void RPM(const std::string& __str, BOOL SSE, BOOL AVX, BOOL AVX512
                 SIZE_T ReturnLength;
 
                 status = RequiemNtQueryVirtualMemory(h, BaseAddress, MemoryBasicInformation, &z, Length, &ReturnLength);
-                if (NT_SUCCESS(status)) {
+                if ((((NTSTATUS)(status)) >= 0)) {
                     if (z.State == 0x00001000 && !(z.Protect & 0x100) && !(z.Protect & 0x01)) {
                         std::vector<char> n(z.RegionSize);
                         SIZE_T r;
 
                         status = RequiemNtReadVirtualMemory(h, z.BaseAddress, n.data(), z.RegionSize, &r);
-                        if (NT_SUCCESS(status)) {
+                        if ((((NTSTATUS)(status)) >= 0)) {
                             char* dataPtr = n.data();
+
+                            /*
+                            std::cout << "Scanning buffer in process " << __p << " at address " << z.BaseAddress << std::endl;
+                            std::cout << "Buffer content: ";
+                            for (size_t i = 0; i < r; ++i) {
+                                std::cout << dataPtr[i];
+                            }
+                            std::cout << std::endl;
+                            */
+
                             if (AVX512) {
                                 const size_t z = __str.size();
                                 const size_t s = 64;
 
                                 size_t __avx512 = (r - z) / s;
-
                                 __m512i cmp = _mm512_loadu_epi32(reinterpret_cast<const __m512i*>(__str.c_str()));
 
                                 for (size_t i = 0; i < __avx512; ++i) {
@@ -210,7 +215,6 @@ __forceinline void RPM(const std::string& __str, BOOL SSE, BOOL AVX, BOOL AVX512
                                 const size_t s = 32;
 
                                 size_t __avx = (r - z) / s;
-
                                 __m256i cmp = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(__str.c_str()));
 
                                 for (size_t i = 0; i < __avx; ++i) {
@@ -246,7 +250,6 @@ __forceinline void RPM(const std::string& __str, BOOL SSE, BOOL AVX, BOOL AVX512
                                 const size_t s = 16;
 
                                 size_t __sse = (r - z) / s;
-
                                 __m128i cmp = _mm_loadu_si128(reinterpret_cast<const __m128i*>(__str.c_str()));
 
                                 for (size_t i = 0; i < __sse; ++i) {
@@ -306,16 +309,16 @@ __forceinline void RPM(const std::string& __str, BOOL SSE, BOOL AVX, BOOL AVX512
             RequiemNtClose(h);
         }
     }
+
     /*
-    
      pop edi
         pop esi
         pop ebx
         mov esp, ebp
         pop ebp
         ret
-
     */
+
 }
 
 static BOOL AdjustTokenPrivilege(HANDLE hproc)
@@ -356,9 +359,9 @@ static BOOL AdjustTokenPrivilege(HANDLE hproc)
 
 static std::wstring toLower(const std::wstring& str) {
     std::wstring result = str;
-    std::transform(result.begin(), result.end(), result.begin(), [](wchar_t c) {
-        return std::tolower(c, std::locale());
-        });
+    for (wchar_t& c : result) {
+        c = std::tolower(c);
+    }
     return result;
 }
 
@@ -395,12 +398,10 @@ static DWORD DetectProcessInstance(const std::wstring& searchString) {
                 if (GetModuleBaseNameW(hProcess, NULL, processName, sizeof(processName) / sizeof(WCHAR))) {
                     std::wstring wideProcessName(processName);
                     std::wstring processLower = toLower(wideProcessName);
-
                     if (processLower.find(searchLower) != std::wstring::npos) {
                         CloseHandle(hProcess);
                         return processes[i];
                     }
-
                 }
 
                 CloseHandle(hProcess);
@@ -426,7 +427,7 @@ int main(int argc, char* argv[]) {
     std::vector<DWORD> pids;
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
-        if (arg == "--pid" || arg == "--process" || arg == "-p") {
+        if (arg == "--pid" || arg == "--process" || arg == "-p" || arg == "-P") {
             if (i + 1 < argc) {
                 std::string plist = argv[i + 1];
                 plist.erase(std::remove(plist.begin(), plist.end(), ' '), plist.end());
@@ -437,7 +438,6 @@ int main(int argc, char* argv[]) {
                     if (isValidProcessToken(token)) {
                         try {
                             DWORD pid = std::stoul(token);
-
                             HANDLE v = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
                             if (v == NULL) {
                                 std::cerr << "[-] Process does not exist: " << pid << std::endl;

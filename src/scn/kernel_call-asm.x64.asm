@@ -1,77 +1,131 @@
 .code
 
-EXTERN Requiem_GetSyscallNumber: PROC
+EXTERN Sys_GetSyscallNumber: PROC
 
-RequiemNtClose PROC
-	mov [rsp +8], rcx          ; Save registers.
+SysNtClose PROC
+	mov [rsp +8], rcx         
 	mov [rsp+16], rdx
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 000951D2Dh        ; Load function hash into ECX.
-	call Requiem_GetSyscallNumber              ; Resolve function hash into syscall number.
+	mov ecx, 000951D2Dh       
+	call Sys_GetSyscallNumber           
 	add rsp, 28h
-	mov rcx, [rsp+8]                      ; Restore registers.
+	mov rcx, [rsp+8]                     
 	mov rdx, [rsp+16]
 	mov r8, [rsp+24]
 	mov r9, [rsp+32]
 	mov r10, rcx
-	syscall                    ; Invoke system call.
+	syscall                   
 	ret
-RequiemNtClose ENDP
+SysNtClose ENDP
 
-RequiemNtQueryVirtualMemory PROC
-	mov [rsp +8], rcx          ; Save registers.
+SysNtQueryVirtualMemory PROC
+	mov [rsp +8], rcx         
 	mov [rsp+16], rdx
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 0C192D11Bh        ; Load function hash into ECX.
-	call Requiem_GetSyscallNumber              ; Resolve function hash into syscall number.
+	mov ecx, 0C192D11Bh     
+	call Sys_GetSyscallNumber             
 	add rsp, 28h
-	mov rcx, [rsp+8]                      ; Restore registers.
+	mov rcx, [rsp+8]                     
 	mov rdx, [rsp+16]
 	mov r8, [rsp+24]
 	mov r9, [rsp+32]
 	mov r10, rcx
-	syscall                    ; Invoke system call.
+	syscall                   
 	ret
-RequiemNtQueryVirtualMemory ENDP
+SysNtQueryVirtualMemory ENDP
 
-RequiemNtOpenProcess PROC
-	mov [rsp +8], rcx          ; Save registers.
+SysNtOpenProcess PROC
+	mov [rsp +8], rcx       
 	mov [rsp+16], rdx
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 0752F54BAh        ; Load function hash into ECX.
-	call Requiem_GetSyscallNumber              ; Resolve function hash into syscall number.
+	mov ecx, 0752F54BAh        
+	call Sys_GetSyscallNumber              
 	add rsp, 28h
-	mov rcx, [rsp+8]                      ; Restore registers.
+	mov rcx, [rsp+8]                    
 	mov rdx, [rsp+16]
 	mov r8, [rsp+24]
 	mov r9, [rsp+32]
 	mov r10, rcx
-	syscall                    ; Invoke system call.
+	syscall                    
 	ret
-RequiemNtOpenProcess ENDP
+SysNtOpenProcess ENDP
 
-RequiemNtReadVirtualMemory PROC
-	mov [rsp +8], rcx          ; Save registers.
+SysNtReadVirtualMemory PROC
+	mov [rsp +8], rcx         
 	mov [rsp+16], rdx
 	mov [rsp+24], r8
 	mov [rsp+32], r9
 	sub rsp, 28h
-	mov ecx, 00B930717h        ; Load function hash into ECX.
-	call Requiem_GetSyscallNumber              ; Resolve function hash into syscall number.
+	mov ecx, 00B930717h      
+	call Sys_GetSyscallNumber            
 	add rsp, 28h
-	mov rcx, [rsp+8]                      ; Restore registers.
+	mov rcx, [rsp+8]                      
 	mov rdx, [rsp+16]
 	mov r8, [rsp+24]
 	mov r9, [rsp+32]
 	mov r10, rcx
-	syscall                    ; Invoke system call.
+	syscall                   
 	ret
-RequiemNtReadVirtualMemory ENDP
+SysNtReadVirtualMemory ENDP
+
+SysNtAllocateVirtualMemory PROC
+	mov [rsp +8], rcx         
+	mov [rsp+16], rdx
+	mov [rsp+24], r8
+	mov [rsp+32], r9
+	sub rsp, 28h
+	mov ecx, 0CBD3E774h        
+	call Sys_GetSyscallNumber              
+	add rsp, 28h
+	mov rcx, [rsp+8]                     
+	mov rdx, [rsp+16]
+	mov r8, [rsp+24]
+	mov r9, [rsp+32]
+	mov r10, rcx
+	syscall                 
+	ret
+SysNtAllocateVirtualMemory ENDP
+
+SysNtFreeVirtualMemory PROC
+	mov [rsp +8], rcx          
+	mov [rsp+16], rdx
+	mov [rsp+24], r8
+	mov [rsp+32], r9
+	sub rsp, 28h
+	mov ecx, 0831F8B8Fh        
+	call Sys_GetSyscallNumber              
+	add rsp, 28h
+	mov rcx, [rsp+8]                      
+	mov rdx, [rsp+16]
+	mov r8, [rsp+24]
+	mov r9, [rsp+32]
+	mov r10, rcx
+	syscall                    
+	ret
+SysNtFreeVirtualMemory ENDP
+
+SysNtQueryInformationProcess PROC
+	mov [rsp +8], rcx          
+	mov [rsp+16], rdx
+	mov [rsp+24], r8
+	mov [rsp+32], r9
+	sub rsp, 28h
+	mov ecx, 0E280F928h      
+	call Sys_GetSyscallNumber              
+	add rsp, 28h
+	mov rcx, [rsp+8]                      
+	mov rdx, [rsp+16]
+	mov r8, [rsp+24]
+	mov r9, [rsp+32]
+	mov r10, rcx
+	syscall                 
+	ret
+SysNtQueryInformationProcess ENDP
 
 end

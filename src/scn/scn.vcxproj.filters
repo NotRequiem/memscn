@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="__memscn.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="kernel_call.c">
@@ -29,6 +29,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kernel_call.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

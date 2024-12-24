@@ -10,7 +10,7 @@
 To scan one or only certain processes for a specific string:
 
 1. Open the console.
-2. Add the -p, -pid, or -process flag followed by the PID numbers and/or process names before executing the program.
+2. Add the -p, -pid, or -process flag followed by the PID numbers and/or process names before executing the program
 
 Example: 
 `C:\Windows\System32>D:\memscn-main\src\x64\Release\scn.exe -p 13000,javaw,4124,SystemInformer,msedge.exe`
@@ -31,6 +31,8 @@ This command line will scan the specified processes for the target string:
 > **__4.__** Easily portable
 
 > **__5.__** Compatible with any Windows x64 system
+
+> **__6.__** Does not require administrator privileges
 
 # Legal
 I am not responsible nor liable for any damage you cause through any malicious usage of this project.
